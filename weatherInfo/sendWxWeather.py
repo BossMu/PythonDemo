@@ -1,5 +1,6 @@
 import pyautogui,pyperclip
 from weather import *
+import time
 
 # document url https://pyautogui.readthedocs.io/en/latest/quickstart.html
 # TK_SILENCE_DEPRECATION=1
@@ -23,18 +24,14 @@ def postMsg(city):
   wea7info = getWeather(city)
   # print(wea7info)
 
-  msg = city
+  msg = city + "\n"
   for info in wea7info:
-    msg = msg + "\n" + " " + info[0] + " 天气：" + info[1] + " 温度：" + info[3] + "-" + info[2]
+    msg = msg + " " + info[0] + " 天气：" + info[1] + " 温度：" + info[3] + "-" + info[2] + "℃\n"
 
   # print(msg)
 
   # 打开微信 ctrl+alt+w
-  pyautogui.keyDown('ctrl')
-  pyautogui.keyDown('alt')
-  pyautogui.press('w')
-  pyautogui.keyUp('ctrl')
-  pyautogui.keyUp('alt')
+  openOrCloseWx()
 
   # 最大化  win+↑
   pyautogui.keyDown('win')
@@ -49,22 +46,36 @@ def postMsg(city):
   # 点击
   pyautogui.click()
 
+  #发送文本
   pyperclip.copy(msg)
   pyautogui.hotkey('ctrl', 'v') 
   pyautogui.press('enter')
 
-
+  #关闭界面
+  openOrCloseWx()
+  
+  time.sleep(PAUSE_TIME)
+  
+  
+def openOrCloseWx():
+  # 打开微信 ctrl+alt+w
+  pyautogui.keyDown('ctrl')
+  pyautogui.keyDown('alt')
+  pyautogui.press('w')
+  pyautogui.keyUp('ctrl')
+  pyautogui.keyUp('alt')
 
 
 if __name__ == '__main__':
   # print(pyautogui.position())# current mouse x and y
   # print(pyautogui.size())
-
+  PAUSE_TIME = 0.1
+  
   pyautogui.FAILSAFE = True
-  pyautogui.PAUSE = 0.01
+  pyautogui.PAUSE = PAUSE_TIME
 
   postMsg('苏州')
-  # postMsg('深圳')
+  postMsg('深圳')
 
 
 
