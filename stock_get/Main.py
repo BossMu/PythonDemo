@@ -1,6 +1,7 @@
 #!/usr/bin/python  
 # coding: UTF-8
 import time
+import Utils as ut
 import threading
 import EmailService
 from SchedulerService import schedulerService
@@ -8,7 +9,9 @@ from Ma20Strategy import ma20Strategy
 from MonitorStrategy import monitorStrategy
 from StockService import stockService
 def getStockNos():
-#	return ['600050']
+    # if(ut.find_file_stocks(".\\data\\stocks_info")):
+        
+    # else:
 	return stockService.getStockCodes()
 	
 def getStrategies():
@@ -27,10 +30,12 @@ def func():
 		for index in range(0,len(stockNos)):
 			stockNo=str(stockNos[index])
 			strategy.strategy(stockNo)
-		emailContent=emailContent+strategy.getEmailContent()
-		strategy.clearRedis()
-	#发送结果邮件
-	EmailService.sendTextOrHtml('stock策略结果',emailContent)
+		tmpContent = strategy.getEmailContent()
+		if tmpContent is not None:
+			emailContent=emailContent+tmpContent
+			#发送结果邮件
+			EmailService.sendTextOrHtml('stock策略结果',emailContent)
+		strategy.clearRedis()	
 
 def monitor():
 	needEmail=monitorStrategy.strategy()
@@ -48,16 +53,20 @@ def monitorScheduler():
 	schedulerService.timming_exe(monitor,after=6,interval=5*60)
 
 
-threads=[]
-strategyThread=threading.Thread(target=strategyScheduler)
-# monitorThread=threading.Thread(target=monitorScheduler)
-threads.append(strategyThread)
-#threads.append(monitorThread)
-for thread in threads :
-	thread.setDaemon(True)  
-	thread.start()
-for thread in threads :
-	thread.join()
-print("执行结束了。\n")
+if __name__ == '__main__':
+	threads=[]
+	strategyThread=threading.Thread(target=strategyScheduler)
+	# monitorThread=threading.Thread(target=monitorScheduler)
+ 
+	threads.append(strategyThread)
+	#threads.append(monitorThread)
+ 
+	for thread in threads :
+		thread.setDaemon(True)  
+		thread.start()
+	for thread in threads :
+		thread.join()
+  
+	print("执行结束了。\n")
 
 

@@ -10,9 +10,9 @@ import EmailService
 from RedisService import redisService
 from StockService import stockService
 class Ma20Strategy():
-	strategyName='ma20'
-	buyKey='buy:ma20'
-	sellKey='sell:ma20'
+	strategyName='ma_strategy'
+	buyKey='buy:ma_strategy'
+	sellKey='sell:ma_strategy'
 	dateDiff=100
 	dateDelta=4			# 拉抬前n日
 	def __init__(self):
@@ -25,39 +25,33 @@ class Ma20Strategy():
 				endDateStr=nowDate.strftime("%Y%m%d")
 				startDateStr=(nowDate-datetime.timedelta(days=self.dateDiff)).strftime("%Y%m%d")
 				df = ts.pro_bar(ts_code=stockNo, start_date=startDateStr,end_date=endDateStr, ma=[5, 20, 50])
-				# if (df is not None) and (len(df.index) >= self.dateDelta):
+				df = round(df, 3)
+    			# if (df is not None) and (len(df.index) >= self.dateDelta):
 				if (df is not None):
-					ma20 = df[u'ma20']
+					ma = df[u'ma5']
 					close = df[u'close']
 					underline=True
+     
 					# 当日冲破均线
 					for index in range(1,self.dateDelta-1):
-						if close[index] > ma20[index]:
+						if close[index] > ma[index]:
 							underline=False
 							break
-					if underline and close[0] > ma20[0]:
+					if underline and close[0] > ma[0]:
 						#存入买入股票编码
 						redisService.sadd(self.buyKey,stockNo)
 						return Signal.Signal(stockNo=stockNo,buy=True,dateStr=endDateStr)
-					# 当日跌破均线
+					
+     				# 当日跌破均线
 					upline=True
 					for index in range(1,self.dateDelta-1):
-						if close[index] < ma20[index]:
+						if close[index] < ma[index]:
 							upline=False
 							break
-					if upline and close[0] < ma20[0]:
+					if upline and close[0] < ma[0]:
 						#存入买入股票编码
 						redisService.sadd(self.sellKey,stockNo)
 						return Signal.Signal(stockNo=stockNo,sell=True,dateStr=endDateStr)				
-					#如果前3天的收盘价在20天均线下方，而当前收盘价在均线上方，则发出买入信号
-					# if close[1] < ma20[1] and close[2] < ma20[2] and close[3] < ma20[3] and close[0] > ma20[0] :
-						#存入买入股票编码
-						# redisService.sadd(self.buyKey,stockNo)
-						# return Signal.Signal(stockNo=stockNo,buy=True,dateStr=dateStr)
-					#如果前3天的收盘价在20天均线上方，而当前收盘价在均线上方，则发出买入信号
-					# if close[1] > ma20[1] and close[2] > ma20[2] and close[3] > ma20[3] and close[0] < ma20[0] :
-						# redisService.sadd(self.sellKey,stockNo)
-						# return Signal.Signal(stockNo=stockNo,sell=True,dateStr=dateStr)
 				return None
 			except:
 				print(self.strategyName,"策略出现异常:", sys.exc_info()[0])

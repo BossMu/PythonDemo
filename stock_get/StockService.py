@@ -45,12 +45,13 @@ class StockService():
 		return stocks
 	def getStockCodes(self):
 		# # ---------------------------s
-		# ts.set_token('99d18f17dfe5955f8817df95528bad6f223092b52cb76a4293d4fb6a')
+		# ts.set_token(Config.TUSHARE_TOKEN)
 		# pro = ts.pro_api()
 		# data = pro.stock_basic(exchange='', list_status='L', fields='ts_code,symbol,name,area,industry,list_date')
 
 		# return data.ts_code
-		# # ---------------------------
+		# ---------------------------
+  
 		## return data.symbol
 		return ['600570.SH']
 	

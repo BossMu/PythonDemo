@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 #coding:utf8
 
+# tushare
+TUSHARE_TOKEN='99d18f17dfe5955f8817df95528bad6f223092b52cb76a4293d4fb6a'
+
 #设置为自己的redis
 REDIS_HOST='127.0.0.1'
 REDIS_PORT='6379'
@@ -13,8 +16,9 @@ DATE_TIME_FORMAT_STR="%Y-%m-%d %H:%M:%S"
 HOLD_STOCKS_FILE_NAME='HoldStocks.txt'
 
 # 邮箱配置
-HOST="smtp.qq.com"            #使用的邮箱的smtp服务器地址，这里是163的smtp地址，经过测试网易和搜狐的邮箱可用
-SENDER="1291322508@qq.com"                           #用户名
-PASSWORD="jgwufzjuhyqfhbed"                          #密码:stmp生成 非登录密码
-POSTFIX="qq.com"                     #邮箱的后缀，网易就是163.com
-RECIPS=["1291322508@qq.com"]   #这里接收人也设置为自己
+HOST="smtp.qq.com"                  #使用的邮箱的smtp服务器地址，这里是163的smtp地址，经过测试网易和搜狐的邮箱可用
+SENDER="1291322508@qq.com"          #用户名
+PASSWORD="jgwufzjuhyqfhbed"         #密码:stmp生成 非登录密码
+POSTFIX="qq.com"                    #邮箱的后缀，网易就是163.com
+#接受者
+RECIPS=["1291322508@qq.com"]   
