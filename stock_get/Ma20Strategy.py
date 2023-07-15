@@ -10,6 +10,8 @@ import EmailService
 from RedisService import redisService
 from StockService import stockService
 class Ma20Strategy():
+	id = -1
+	status = False
 	strategyName='ma_strategy'
 	buyKey='buy:ma_strategy'
 	sellKey='sell:ma_strategy'

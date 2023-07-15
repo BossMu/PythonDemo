@@ -4,6 +4,17 @@
 #线程配置
 THREAD_NUMS = 3
 
+# 策略
+MACD = "macd"
+MA20 = "MA20"
+STRATEGIES = {
+    MACD : True,
+    MA20 : False
+}
+
+# redis_keys
+STRATEFIES_NAME = "strategies"
+
 # tushare
 TUSHARE_TOKEN='99d18f17dfe5955f8817df95528bad6f223092b52cb76a4293d4fb6a'
 

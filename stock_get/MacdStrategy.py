@@ -14,10 +14,13 @@ import numpy as np
 # from RedisService import redisService
 from StockService import stockService
 class MacdStrategy():
-	strategyName='MACD'
-	buyKey='buy:MACD'
-	sellKey='sell:MACD'
+	id = -1
+	status = False
+	strategyName=Config.MACD
+	buyKey='buy:' + Config.MACD
+	sellKey='sell:' + Config.MACD
 	dateDelta=52
+	
 	def __init__(self):
 		pass
 	#计算快速平滑移动均线

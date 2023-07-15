@@ -17,13 +17,34 @@ from RedisService import RedisService
 import tushare as ts  
 import numpy as np
 
-from Ma20Strategy import ma20Strategy
-from MacdStrategy import macdStrategy
+from Ma20Strategy import Ma20Strategy
+from MacdStrategy import MacdStrategy
 
+# 全局变量
+STRATEGIES = []	# 策略
 	
-def getStrategies():
-    return [macdStrategy]
-	# return [ma20Strategy,macdStrategy]
+def loadStrategies(): 
+	for i, (key, value) in enumerate(Config.STRATEGIES.items()):
+		#创建实例
+		strategy = None
+		if(key == Config.MACD):
+			strategy = MacdStrategy()
+		elif(key == Config.MA20):
+			strategy = Ma20Strategy()
+		else:
+			print("未定义的策略类型")
+		
+		# 更新策略信息
+		strategy.id = i
+		if(value):
+			# rs.sadd(Config.STRATEFIES_NAME, key)
+			strategy.status = True
+   
+		if(strategy != None):
+			STRATEGIES.append(strategy)
+			
+	# return rs.smembers(Config.STRATEFIES_NAME)
+
 	
 def func(strategies, stocks):
 	#如果是交易时间，则直接返回----------
@@ -63,7 +84,7 @@ def strategyScheduler(rows):
 	threads = []
 	deal_nums = math.ceil(rows / Config.THREAD_NUMS)
 
-	strategies = getStrategies()	# 获取策略
+	strategies = loadStrategies()	# 获取策略
  
 	# 代码定位：每个线程处理固定的代码，策略可以变
 	for i in range(Config.THREAD_NUMS):
@@ -154,24 +175,39 @@ def downloadHqInfo(rows):
     
 if __name__ == '__main__':
 	RUN_FLAG_0 = False
-	FILE_EXIT_DROP_FLAG = False
 	RUN_FLAG_1 = False
+	FILE_EXIT_DROP_FLAG = False
 	RUN_FLAG_2 = False
 	RUN_FLAG_3 = False
+	RUN_FLAG_4 = False
+    
+    # 加载策略到内存
+	loadStrategies()
     
 	ret = False
 	while True:
 		if(FILE_EXIT_DROP_FLAG):
 			choice = "0"
 		else:
-			choice = input("【选股策略】 请输入功能选项：\n0 - 下载股票代码\n1 - 下载行情数据\n2 - 选股策略\n3 - 代码验证\n" )
+			choice = input("\n【选股策略】 请输入功能选项：\n0 - 绑定策略\n1 - 下载股票代码\n2 - 下载行情数据\n3 - 选股策略\n4 - 代码验证\n" )
+		# 绑策略
+		if(choice == "0"):	
+			for strategy in STRATEGIES:
+				print("编号：" + str(strategy.id) + " 状态：" + str(strategy.status) + " 策略名称：" + strategy.strategyName)
+			s_id = input("\n输入策略编号改变策略状态，回车退出\n" )
+			if(s_id != "\n"):
+				for strategy in STRATEGIES:
+					if(strategy.id == int(s_id)):
+						strategy.status = not strategy.status
+					print("编号：" + str(strategy.id) + " 状态：" + str(strategy.status) + " 策略名称：" + strategy.strategyName)
+			
 		# 下载股票
-		if choice == "0" or FILE_EXIT_DROP_FLAG:
+		elif(choice == "1" or FILE_EXIT_DROP_FLAG):
 			# 记录股票代码
 			rows,FILE_EXIT_DROP_FLAG = ut.saveStocks(FILE_EXIT_DROP_FLAG)
-			RUN_FLAG_0 = True
+			RUN_FLAG_1 = True
 		# 下载行情
-		elif choice == "1":
+		elif(choice == "2"):
 			# 
 			ret,stocks,rows = ut.getStocks()	# 获取所有代码
 			if(ret):
@@ -186,10 +222,10 @@ if __name__ == '__main__':
 			else:
 				print("获取股票失败，请下载股票代码")
     
-		elif choice == "2":
+		elif(choice == "3"):
 			# 运行功能2的代码
 			pass
-		elif choice == "3":
+		elif(choice == "4"):
 			# 运行功能3的代码
 			pass
 		else:
