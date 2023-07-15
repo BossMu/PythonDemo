@@ -8,7 +8,7 @@ import Signal
 import Config
 import EmailService
 from SchedulerService import schedulerService
-from RedisService import redisService
+# from RedisService import redisService
 from StockService import stockService
 
 class MonitorStrategy():

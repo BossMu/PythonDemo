@@ -7,7 +7,7 @@ import datetime
 import Signal
 import Config
 import EmailService
-from RedisService import redisService
+# from RedisService import redisService
 from StockService import stockService
 from DateTimeUtils import dateTimeUtils
 class FundHoldStrategy():

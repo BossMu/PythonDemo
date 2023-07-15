@@ -4,7 +4,7 @@ import os
 import time
 import tushare as ts   
 import Config
-from RedisService import redisService
+# from RedisService import redisService
 class StockService():
 	def __init__(self):
 		pass
@@ -43,6 +43,7 @@ class StockService():
 		column_totals=df[u'totals']
 		column_totalAssets=df[u'totalAssets']
 		return stocks
+
 	def getStockCodes(self):
 		# # ---------------------------s
 		# ts.set_token(Config.TUSHARE_TOKEN)

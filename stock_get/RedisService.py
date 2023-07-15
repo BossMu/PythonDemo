@@ -6,12 +6,17 @@ import Config
 class RedisService():
 	__POOL=None
 	__DB=None
-	def __init__(self):
+	def __init__(self , db_id = 0):
 		if self.__DB is None:
-			self.__POOL=redis.ConnectionPool(host=Config.REDIS_HOST,port=Config.REDIS_PORT,db=0,password=Config.REDIS_PASSWD)
+			self.__POOL=redis.ConnectionPool(host=Config.REDIS_HOST,port=Config.REDIS_PORT,db=db_id,password=Config.REDIS_PASSWD)
 			self.__DB=redis.StrictRedis(connection_pool=self.__POOL)
-	
-	#获取字符串
+ 
+	#解除连接
+	def close(self):
+		if(self.__DB):
+			self.__DB.close()
+  
+  	#获取字符串
 	def to_str(self,bytes_or_str):
 		if isinstance(bytes_or_str,bytes):
 			value=bytes_or_str.decode(Config.CHAR_SET)
@@ -203,6 +208,7 @@ class RedisService():
 		return self.__DB.hgetall(key)
 		
 redisService=RedisService()
+
 # rs=RedisService()
 # rs.sadd('foo', 'bar')
 # print(rs.get('foo'))

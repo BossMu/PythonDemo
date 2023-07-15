@@ -13,11 +13,11 @@ import time
 import Config
 
 #设置为自己的邮箱服务器
-HOST=Config.HOST
-SENDER=Config.SENDER
-PASSWORD=Config.PASSWORD
-POSTFIX=Config.POSTFIX
-RECIPS=Config.RECIPS
+EMAIL_HOST=Config.EMAIL_HOST
+EMAIL_SENDER=Config.EMAIL_SENDER
+EMAIL_PASSWORD=Config.EMAIL_PASSWORD
+EMAIL_POSTFIX=Config.EMAIL_POSTFIX
+EMAIL_RECIPS=Config.EMAIL_RECIPS
 
 
 # 一个包含文本和html的多部分邮件。多部分消息通常包含纯文本和html格式，客户端自行选择显示哪个。（web客户端显示html，命令行客户端显示纯文本）
@@ -65,38 +65,38 @@ def make_file_msg(file_name):
     return myemail
 
 def sendMsg(fr, to, message):
-    sendSvr = smtplib.SMTP_SSL(HOST,465)
-    #sendSvr.connect(HOST)  # 连接服务器
-    sendSvr.login(SENDER, PASSWORD)  # 登录操作
+    sendSvr = smtplib.SMTP_SSL(EMAIL_HOST,465)
+    #sendSvr.connect(EMAIL_HOST)  # 连接服务器
+    sendSvr.login(EMAIL_SENDER, EMAIL_PASSWORD)  # 登录操作
     errs = sendSvr.sendmail(fr, to, message)  #参数：发件人，收件人，消息正文
     sendSvr.quit()
 
 def sendTextOrHtml(subject,content):
 	msg = make_mpa_msg(content)
-	msg['From'] = SENDER
-	msg['To'] = ', '.join(RECIPS)
+	msg['From'] = EMAIL_SENDER
+	msg['To'] = ', '.join(EMAIL_RECIPS)
 	msg['Subject'] = subject
-	sendMsg(SENDER,RECIPS, msg.as_string())
+	sendMsg(EMAIL_SENDER,EMAIL_RECIPS, msg.as_string())
 
 if __name__ == '__main__':
-	recips=['test@qq.com','test@qq.com']
-	sendTextOrHtml('人生苦短，我用python!','Life is short,you need Python!',recips)
+	EMAIL_RECIPS=['test@qq.com','test@qq.com']
+	sendTextOrHtml('人生苦短，我用python!','Life is short,you need Python!',EMAIL_RECIPS)
 	#time.sleep(1);
 	#msg = make_mpa_msg('Life is short,you need Python!')
-	#msg['From'] = SENDER
-	#msg['To'] = ', '.join(RECIPS)
+	#msg['From'] = EMAIL_SENDER
+	#msg['To'] = ', '.join(EMAIL_RECIPS)
 	#msg['Subject'] = '人生苦短，我用python!'
-	#sendMsg(SENDER, RECIPS, msg.as_string())
+	#sendMsg(EMAIL_SENDER, EMAIL_RECIPS, msg.as_string())
     #print('发送图片消息体')
     #msg = make_img_msg(r'D:/test.jpg')
-    #msg['From'] = SENDER
-    #msg['To'] = ', '.join(RECIPS)
+    #msg['From'] = EMAIL_SENDER
+    #msg['To'] = ', '.join(EMAIL_RECIPS)
     #msg['Subject'] = '图片消息邮件'
-    #sendMsg(SENDER, RECIPS, msg.as_string())
+    #sendMsg(EMAIL_SENDER, EMAIL_RECIPS, msg.as_string())
     #
     #print('发送文件消息体')
     #msg = make_file_msg(r'D:/test.mp4')
-    #msg['From'] = SENDER
-    #msg['To'] = ', '.join(RECIPS)
+    #msg['From'] = EMAIL_SENDER
+    #msg['To'] = ', '.join(EMAIL_RECIPS)
     #msg['Subject'] = '文件消息邮件'
-    #sendMsg(SENDER, RECIPS, msg.as_string())
+    #sendMsg(EMAIL_SENDER, EMAIL_RECIPS, msg.as_string())

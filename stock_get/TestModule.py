@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 #coding:utf8
-from RedisService import redisService
+# from RedisService import redisService
 def testRedis():
 	print('str')
 	redisService.set('string','str')
