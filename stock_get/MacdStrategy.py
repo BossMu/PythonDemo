@@ -11,7 +11,8 @@ import talib
 import Utils as ut
 import numpy as np
 # import pandas as pd
-# from RedisService import redisService
+from RedisService import RedisService
+from RedisService import redisService
 from StockService import stockService
 class MacdStrategy():
 	id = -1
@@ -144,73 +145,83 @@ class MacdStrategy():
 		macd = macd * 2
 		
 		return (macdDIFF, macdDEA, macd)
-	def strategy(self,stockNo):
-		if stockNo is not None:
+	def strategy(self,rows,stocks,beforeDays):
+		rs1=RedisService(1)
+  
+		begin_index,deal_nums = ut.getCurrentThreadIndex(rows)
+		stocks = ut.getDataByIndex(stocks,begin_index,deal_nums)
+  
+		for stock in stocks:
 			try:
-				nowDate=datetime.datetime.now()	
-				endDateStr=nowDate.strftime("%Y%m%d")
-				startDateStr=(nowDate-datetime.timedelta(days=Config.MACD_DATE_DELTA)).strftime("%Y%m%d")
-				df = ts.pro_bar(ts_code=stockNo, start_date=startDateStr,end_date=endDateStr)
-				close =df.close.iloc[::-1].values
-				# macdDIFF, macdDEA, macd = self.macd(close)
-				# close = [12.38,12.21,12.01,11.93,12.1,11.98,11.87,11.6,11.59,11.93,11.91,11.84,11.94,12.12,11.88,11.79,11.77,11.47,11.61,11.63,11.45,11.36,11.35,11.18, 11.28, 11.3, 11.18, 11.23, 11.49, 11.4, 11.34, 11.24, 11.2, 11.2, 11.21, 11.24, 11.43, 11.46]
-				# print(close)
-				# pro = ts.pro_api()
-				# df = pro.stk_factor(ts_code='600000.SH', start_date='20230501', end_date='20230520', fields='ts_code,trade_date,macd,kdj_k,kdj_d,kdj_j')
-				# df = pro.stk_factor(ts_code='600000.SH', start_date='20230710', end_date='20230714', fields='ts_code,trade_date,macd_dif,macd_dea,macd')
-				# macdDIFF, macdDEA, macd = self.calculateMACD(close,12,26,9)
-				macdDIFF, macdDEA, macd = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
-				macd = macd * 2
-				print("stock:" + stockNo + " macdDIFF:" + str(macdDIFF[-1]) +" macdDEA:" + str(macdDEA[-1]) + " macd:" + str(macd[-1]))
+				stock_price = rs1.smembers(stock)
+				# 未找到该股票
+				if(len(stock_price) <= 0):
+					continue
+				close = ut.dealStrtoNum(stock_price[0], beforeDays)
+				if(close):
+					macdDIFF, macdDEA, macd = talib.MACD(np.array(close), fastperiod=Config.MACD_FAST_PERIOD, slowperiod=Config.MACD_SLOW_PERIOD, signalperiod=Config.MACD_SIGNAL_PERIOD)
+					macd = macd * 2
 
-				macdDIFF_front = macdDIFF[-2] 
-				macdDIFF = macdDIFF[-1]
-				macdDEA_front = macdDEA[-2]
-				macdDEA = macdDEA[-1]
-				macd_front = macd[-2]
-				macd = macd[-1]		
-				if(macdDIFF_front <= macdDEA_front and macdDIFF >= macdDEA):
-					redisService.sadd(self.buyKey,stockNo)
-				elif(macdDIFF_front >= macdDEA_front and macdDIFF <= macdDEA):
-					redisService.sadd(self.sellKey,stockNo)
-				
-				# print(signal)
-				# print(hist)
-				# for index in range(len(macd) - 10):
-				# 	if(macd[index]):
+					if(macd is not None and len(macd) > 5):
+						macdDIFF_front = macdDIFF[-2] 
+						macdDIFF = macdDIFF[-1]
+						macdDEA_front = macdDEA[-2]
+						macdDEA = macdDEA[-1]
+						macd_front = macd[-2]
+						macd = macd[-1]
+						if(macdDIFF_front is None or macdDIFF is None or
+         					macdDEA_front is None or macdDEA is None or
+              				macd_front is None or macd is None):
+							continue
+						if(macdDIFF_front <= macdDEA_front and macdDIFF >= macdDEA):
+							redisService.sadd(self.buyKey,stock)
+						elif(macdDIFF_front >= macdDEA_front and macdDIFF <= macdDEA):
+							redisService.sadd(self.sellKey,stock)
+       
+						print("stock:" + stock + " macdDIFF:" + str(macdDIFF) +" macdDEA:" + str(macdDEA) + " macd:" + str(macd))
 						
-       			
-       			# #最少需要28行数据
-				# if df and (len(df.index) >= 28) :
-				# front_EMA12=self.cal_EMA(df.ix[1:-1,:],12,12)
-				# front_EMA26=self.cal_EMA(df.ix[1:-1,:],26,26)
-				#前日差离率
-				# front_DIF=EMA12-EMA26
-				# EMA12=self.cal_EMA(close,12,12)
-				# EMA26=self.cal_EMA(close,26,26)
-				# #今日差离率
-				# DIF=EMA12-EMA26
-				# DEA=self.cal_DEA(close)
-				# BAR=2*(DIF-DEA)
-				# 	#根据离差率判断是否属于上升趋势
-				# 	if front_DIF <= DIF and DIF >= DEA :
-				# 		#如果离差率上穿DEA则为金叉，发出买入信号
-				# 		#存入买入股票编码
-				# 		redisService.sadd(self.buyKey,stockNo)
-				# 	#如果离差率下破DEA则为死叉，发出卖出信号
-				# 	if front_DIF >= DIF and DIF <= DEA :
-				# 		#如果当前股票在持股里面，则发出卖出信号
-				# 		holdStocks=redisService.smembers(Config.KEY_HOLD_STOCK)
-				# 		for holdNo in holdStocks:
-				# 			if holdNo == stockNo :
-				# 				redisService.sadd(self.sellKey,stockNo)
-				# return None
-			except:
-				print(self.strategyName,"策略出现异常:", sys.exc_info()[0])
-			finally:
+					
+					# print(signal)
+					# print(hist)
+					# for index in range(len(macd) - 10):
+					# 	if(macd[index]):
+							
+					
+					# #最少需要28行数据
+					# if df and (len(df.index) >= 28) :
+					# front_EMA12=self.cal_EMA(df.ix[1:-1,:],12,12)
+					# front_EMA26=self.cal_EMA(df.ix[1:-1,:],26,26)
+					#前日差离率
+					# front_DIF=EMA12-EMA26
+					# EMA12=self.cal_EMA(close,12,12)
+					# EMA26=self.cal_EMA(close,26,26)
+					# #今日差离率
+					# DIF=EMA12-EMA26
+					# DEA=self.cal_DEA(close)
+					# BAR=2*(DIF-DEA)
+					# 	#根据离差率判断是否属于上升趋势
+					# 	if front_DIF <= DIF and DIF >= DEA :
+					# 		#如果离差率上穿DEA则为金叉，发出买入信号
+					# 		#存入买入股票编码
+					# 		redisService.sadd(self.buyKey,stockNo)
+					# 	#如果离差率下破DEA则为死叉，发出卖出信号
+					# 	if front_DIF >= DIF and DIF <= DEA :
+					# 		#如果当前股票在持股里面，则发出卖出信号
+					# 		holdStocks=redisService.smembers(Config.KEY_HOLD_STOCK)
+					# 		for holdNo in holdStocks:
+					# 			if holdNo == stockNo :
+					# 				redisService.sadd(self.sellKey,stockNo)
+					# return None
+			except Exception as e:
+				print(self.strategyName,"股票代码：" + stock + " 策略出现异常:", str(e),sys.exc_info()[0])
+				flag = input("\n是否继续计算后续代码？Y/y - 继续  N/n/else - 退出\n" )
+				if(flag != "Y" and flag != "y"):
+					break
+			# finally:
 				#让出线程
-				time.sleep(0.01)
-				return None
+				# time.sleep(0.01)
+				# return None
+		rs1.close()
 		return None
 		
 	# def strategy(self,stockNo):
@@ -266,11 +277,12 @@ class MacdStrategy():
 			content=content+'<br/>'
 			content=content+'买入('+str(len(buyList))+'支)：<br/>'
 			content = content + ','.join(buyList)
-			content=content+'\r\n'
+			content=content+'\r\n<br/>'
 			content=content+'卖出('+str(len(sellList))+'支)：<br/>'
 			content = content + ','.join(sellList)
 		return content
-		
+	
+	
 	def clearRedis(self):
 		redisService.delete(self.buyKey)
 		redisService.delete(self.sellKey)
@@ -281,7 +293,7 @@ if __name__=='__main__':
 	print('请确保当日收盘后再运行，否则需要调整历史行情数据的获取截止日期为前一天')
 	print("MACD策略开始时间：",datetime.datetime.now().strftime(Config.DATE_TIME_FORMAT_STR))
 	# macdStrategy.clearRedis()
-	stockNos=ut.getStocks()
+	stockNos=ut.getStocksFromDoc()
 	for index in range(0,len(stockNos)):
 		stockNo=stockNos[index]
 		macdStrategy.strategy(stockNo)

@@ -2,7 +2,7 @@
 #coding:utf8
 
 #线程配置
-THREAD_NUMS = 3
+THREAD_NUMS = 1
 
 # 策略
 MACD = "macd"
